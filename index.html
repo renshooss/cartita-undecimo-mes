@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>para el amor de mi laif ✿</title>
+<title>Para ti ✿</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Nunito:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -268,9 +268,9 @@ html, body {
     <!-- SLOT_1: descomenta para añadir foto circular arriba
     <img class="slot-top-image" src="TU_FOTO.jpg" alt=""> -->
 
-    <p class="player-label">✿ &nbsp; TE AMO &nbsp; ✿</p>
-    <h1 class="player-title">para el amor<br>de mi vida ;3</h1>
-    <p class="player-sub">presiona play cuando estés lista</p>
+    <p class="player-label">✿ &nbsp; PARA MAILOV &nbsp; ✿</p>
+    <h1 class="player-title">una pequeña <br>carta de amor;3</h1>
+    <p class="player-sub">dale a play amolchito</p>
 
     <div class="vinyl-wrap">
       <div class="vinyl-disc" id="vinyl">
@@ -283,7 +283,7 @@ html, body {
     <button class="play-btn" id="play-btn" aria-label="Play">
       <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
     </button>
-    <p class="play-hint">toca para comenzar</p>
+    <p class="play-hint">DALE CLICK AMOLL</p>
 
   </div>
 </div>
@@ -296,8 +296,8 @@ html, body {
       <span class="letter-ornament-icon">✿</span>
       <div class="letter-ornament-line"></div>
     </div>
-    <p class="letter-eyebrow">con todo mi corazón</p>
-    <h2 class="letter-title">TE AMO</h2>
+    <p class="letter-eyebrow">cartita para mailov</p>
+    <h2 class="letter-title">te amo amor</h2>
   </div>
 
   <!-- SLOT_2: carta de Canva — archivo: carta.jpg -->
@@ -313,7 +313,7 @@ html, body {
 
   <div class="letter-footer">
     <p class="footer-flowers">✿ ❀ ✿</p>
-    <p class="footer-sign">con amor, el amor de tu vida ;3</p>
+    <p class="footer-sign">con amor</p>
   </div>
 </div>
 
@@ -410,6 +410,9 @@ function setPlaying(v) {
 playBtn.addEventListener('click', () => {
   if (isPlaying) { audio.pause(); setPlaying(false); }
   else {
+    // fullscreen en el mismo gesto del click (requerido por iOS/Android)
+    const el = document.documentElement;
+    try { (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || function(){}).call(el); } catch(e) {}
     audio.play().catch(() => {});
     setPlaying(true);
     if (!triggered) { triggered = true; setTimeout(startTransition, 2200); }

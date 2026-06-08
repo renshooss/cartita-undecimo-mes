@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>para el amor de mi laif ✿</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Nunito:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --rose:      #f4b8c8;
+  --rose-deep: #d96b8f;
+  --petal:     #fdf4f7;
+  --dark:      #2e1520;
+  --mid:       #7a4a5c;
+  --soft:      #b07a90;
+  --cream:     #fff8fa;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--petal);
+  font-family: 'Nunito', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* ── CANVAS FONDO ── */
+#petal-canvas {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+}
+
+/* ── CANVAS TRANSICIÓN (encima de todo) ── */
+#trans-canvas {
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 40;
+  opacity: 0;
+}
+
+/* ── SCREEN 1: PLAYER ── */
+#screen-player {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  background: linear-gradient(170deg, #fff8fa 0%, #fde8ef 55%, #f8d8e4 100%);
+}
+#screen-player::before {
+  content: '';
+  position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
+  width: 320px; height: 320px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(244,184,200,0.45) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.player-inner {
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column;
+  align-items: center;
+  padding: 48px 32px 40px;
+  width: 100%; max-width: 420px;
+}
+
+/* SLOT_1 — imagen circular arriba del player
+   Para activar: descomenta <img class="slot-top-image" src="TU_FOTO.jpg"> en el HTML */
+.slot-top-image {
+  width: 110px; height: 110px; border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(244,184,200,0.6);
+  box-shadow: 0 4px 24px rgba(217,107,143,0.22);
+  margin-bottom: 28px; display: block;
+}
+
+.player-label {
+  font-size: 11px; letter-spacing: 5px;
+  color: var(--soft); text-transform: uppercase;
+  margin-bottom: 14px;
+  opacity: 0; animation: rise 1s 0.2s forwards;
+}
+.player-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 40px; font-weight: 300; font-style: italic;
+  color: var(--dark); text-align: center; line-height: 1.15;
+  margin-bottom: 8px;
+  opacity: 0; animation: rise 1s 0.45s forwards;
+}
+.player-sub {
+  font-size: 13px; color: var(--soft);
+  text-align: center; letter-spacing: 0.5px;
+  margin-bottom: 44px;
+  opacity: 0; animation: rise 1s 0.65s forwards;
+}
+
+/* ── VINYL ── */
+.vinyl-wrap {
+  width: 164px; height: 164px; margin-bottom: 40px;
+  opacity: 0; animation: rise 1s 0.85s forwards;
+}
+.vinyl-disc {
+  width: 164px; height: 164px; border-radius: 50%;
+  background: repeating-radial-gradient(circle at center,
+    #1c0a12 0px, #1c0a12 2px, #2a1020 2px, #2a1020 5px);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.04), 0 8px 40px rgba(180,60,100,0.3);
+}
+.vinyl-disc.spinning { animation: spin 3.2s linear infinite; }
+.vinyl-center {
+  width: 62px; height: 62px; border-radius: 50%;
+  background: radial-gradient(circle at 40% 38%, #fde8ef, #f4b8c8 60%, #d96b8f);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: inset 0 1px 3px rgba(255,255,255,0.4);
+}
+.vinyl-hole { width: 8px; height: 8px; border-radius: 50%; background: #1c0a12; }
+
+/* ── PLAY BTN ── */
+.play-btn {
+  width: 68px; height: 68px; border-radius: 50%;
+  background: linear-gradient(145deg, #f4b8c8, #d96b8f);
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 24px rgba(217,107,143,0.45), 0 0 0 8px rgba(244,184,200,0.18);
+  transition: transform 0.15s, box-shadow 0.15s;
+  margin-bottom: 16px;
+  opacity: 0; animation: rise 1s 1.05s forwards;
+}
+.play-btn:active { transform: scale(0.94); }
+.play-btn:hover  { transform: scale(1.05); }
+.play-btn svg { fill: white; width: 28px; height: 28px; margin-left: 3px; }
+.play-hint {
+  font-size: 11px; letter-spacing: 3px;
+  color: var(--soft); text-transform: uppercase;
+  opacity: 0; animation: rise 1s 1.2s forwards;
+}
+
+/* ── SCREEN 2: CARTA ── */
+#screen-letter {
+  position: fixed; inset: 0; z-index: 5;
+  overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  background: linear-gradient(180deg, #fff8fa 0%, #fde8ef 40%, #f8d8e4 100%);
+  opacity: 0; pointer-events: none;
+  padding-bottom: 80px;
+}
+#screen-letter.active { opacity: 1; pointer-events: auto; }
+
+.letter-header {
+  display: flex; flex-direction: column;
+  align-items: center; padding: 56px 24px 32px; gap: 10px;
+}
+.letter-ornament {
+  display: flex; align-items: center; gap: 14px;
+  width: 100%; justify-content: center;
+}
+.letter-ornament-line {
+  height: 0.5px; flex: 1; max-width: 90px;
+  background: linear-gradient(90deg, transparent, var(--rose), transparent);
+}
+.letter-ornament-icon { font-size: 18px; color: var(--rose-deep); opacity: 0.7; }
+.letter-eyebrow { font-size: 11px; letter-spacing: 5px; color: var(--soft); text-transform: uppercase; }
+.letter-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 34px; font-weight: 300; font-style: italic;
+  color: var(--dark); text-align: center;
+}
+
+/* SLOT_2 — carta principal (carta.jpg) */
+.letter-img-wrap {
+  margin: 0 16px; border-radius: 24px; overflow: hidden;
+  box-shadow: 0 16px 56px rgba(200,80,120,0.18), 0 2px 8px rgba(200,80,120,0.1);
+}
+#carta-img { width: 100%; display: block; }
+
+/* SLOT_3 — imagen extra opcional
+   Para activar: cambia display:none a display:block */
+.slot-extra-wrap {
+  margin: 24px 16px 0; border-radius: 20px; overflow: hidden;
+  box-shadow: 0 8px 32px rgba(200,80,120,0.14);
+  display: none;
+}
+.slot-extra-img { width: 100%; display: block; }
+
+.letter-footer {
+  padding: 36px 24px 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+}
+.footer-flowers { font-size: 22px; letter-spacing: 6px; opacity: 0.5; }
+.footer-sign {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px; font-style: italic; color: var(--mid);
+}
+
+/* ── MUSIC BAR ── */
+#music-bar {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  height: 58px; z-index: 30;
+  background: rgba(253,232,239,0.88);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-top: 0.5px solid rgba(244,184,200,0.5);
+  display: flex; align-items: center;
+  padding: 0 20px; gap: 14px;
+  transform: translateY(100%);
+  transition: transform 0.6s cubic-bezier(0.34,1.4,0.64,1);
+}
+#music-bar.show { transform: translateY(0); }
+
+.bar-waves { display: flex; align-items: center; gap: 2.5px; height: 24px; flex-shrink: 0; }
+.bar-waves span {
+  display: block; width: 3px; border-radius: 3px;
+  background: var(--rose-deep); transform-origin: bottom;
+  animation: wave 1.1s ease-in-out infinite;
+}
+.bar-waves span:nth-child(1){height:10px;animation-delay:0.0s}
+.bar-waves span:nth-child(2){height:18px;animation-delay:0.15s}
+.bar-waves span:nth-child(3){height:14px;animation-delay:0.3s}
+.bar-waves span:nth-child(4){height:22px;animation-delay:0.08s}
+.bar-waves span:nth-child(5){height:12px;animation-delay:0.22s}
+.bar-waves.paused span { animation-play-state: paused; }
+
+.bar-song-name {
+  flex: 1; min-width: 0; font-size: 12px; color: var(--mid);
+  font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.bar-mini-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(145deg, var(--rose), var(--rose-deep));
+  border: none; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 12px rgba(217,107,143,0.4); transition: transform 0.15s;
+}
+.bar-mini-btn:active { transform: scale(0.9); }
+.bar-mini-btn svg { fill: white; width: 15px; height: 15px; }
+
+/* ── KEYFRAMES ── */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes wave {
+  0%,100% { transform: scaleY(0.35); }
+  50%     { transform: scaleY(1); }
+}
+</style>
+</head>
+<body>
+
+<!-- fondo pétalos -->
+<canvas id="petal-canvas"></canvas>
+
+<!-- canvas transición (encima de todo) -->
+<canvas id="trans-canvas"></canvas>
+
+<!-- audio nativo -->
+<audio id="audio" src="al-despertar.mp3" preload="auto"></audio>
+
+<!-- ══ SCREEN 1: PLAYER ══ -->
+<div id="screen-player">
+  <div class="player-inner">
+
+    <!-- SLOT_1: descomenta para añadir foto circular arriba
+    <img class="slot-top-image" src="TU_FOTO.jpg" alt=""> -->
+
+    <p class="player-label">✿ &nbsp; TE AMO &nbsp; ✿</p>
+    <h1 class="player-title">para el amor<br>de mi vida ;3</h1>
+    <p class="player-sub">presiona play cuando estés lista</p>
+
+    <div class="vinyl-wrap">
+      <div class="vinyl-disc" id="vinyl">
+        <div class="vinyl-center">
+          <div class="vinyl-hole"></div>
+        </div>
+      </div>
+    </div>
+
+    <button class="play-btn" id="play-btn" aria-label="Play">
+      <svg id="play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+    </button>
+    <p class="play-hint">toca para comenzar</p>
+
+  </div>
+</div>
+
+<!-- ══ SCREEN 2: CARTA ══ -->
+<div id="screen-letter">
+  <div class="letter-header">
+    <div class="letter-ornament">
+      <div class="letter-ornament-line"></div>
+      <span class="letter-ornament-icon">✿</span>
+      <div class="letter-ornament-line"></div>
+    </div>
+    <p class="letter-eyebrow">con todo mi corazón</p>
+    <h2 class="letter-title">TE AMO</h2>
+  </div>
+
+  <!-- SLOT_2: carta de Canva — archivo: carta.jpg -->
+  <div class="letter-img-wrap">
+    <img id="carta-img" src="carta.jpg" alt="Carta">
+  </div>
+
+  <!-- SLOT_3: imagen extra opcional
+       Para activar: cambia display:none → display:block en .slot-extra-wrap -->
+  <div class="slot-extra-wrap">
+    <img class="slot-extra-img" src="TU_IMAGEN_EXTRA.jpg" alt="">
+  </div>
+
+  <div class="letter-footer">
+    <p class="footer-flowers">✿ ❀ ✿</p>
+    <p class="footer-sign">con amor, el amor de tu vida ;3</p>
+  </div>
+</div>
+
+<!-- ══ MUSIC BAR ══ -->
+<div id="music-bar">
+  <div class="bar-waves" id="bar-waves">
+    <span></span><span></span><span></span><span></span><span></span>
+  </div>
+  <p class="bar-song-name">♪ &nbsp; al despertar</p>
+  <button class="bar-mini-btn" id="bar-btn" aria-label="Pause">
+    <svg id="bar-icon" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+  </button>
+</div>
+
+<script>
+// ════════════════════════════════
+// PÉTALOS DE FONDO
+// ════════════════════════════════
+const bgCanvas = document.getElementById('petal-canvas');
+const bgCtx    = bgCanvas.getContext('2d');
+let bgPetals   = [];
+
+function resizeBg() { bgCanvas.width = innerWidth; bgCanvas.height = innerHeight; }
+resizeBg(); window.addEventListener('resize', resizeBg);
+
+const COLORS = ['#f4b8c8','#f9dce6','#fde8ef','#e8a0b8','#fbc8d8'];
+
+function mkBgPetal() {
+  return {
+    x: Math.random() * bgCanvas.width, y: -20,
+    w: Math.random() * 7 + 5, h: Math.random() * 5 + 4,
+    vy: Math.random() * 1.0 + 0.5, vx: Math.random() * 0.6 - 0.3,
+    rot: Math.random() * Math.PI * 2, rs: (Math.random() - 0.5) * 0.035,
+    alpha: Math.random() * 0.45 + 0.25,
+    wob: Math.random() * Math.PI * 2, ws: Math.random() * 0.018 + 0.008,
+    color: COLORS[Math.random() * COLORS.length | 0]
+  };
+}
+function drawBgPetal(p) {
+  bgCtx.save();
+  bgCtx.translate(p.x, p.y); bgCtx.rotate(p.rot);
+  bgCtx.globalAlpha = p.alpha; bgCtx.fillStyle = p.color;
+  bgCtx.beginPath(); bgCtx.ellipse(0, 0, p.w * 0.38, p.h, 0, 0, Math.PI * 2);
+  bgCtx.fill(); bgCtx.restore();
+}
+function bgTick() {
+  bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+  if (bgPetals.length < 30 && Math.random() < 0.1) bgPetals.push(mkBgPetal());
+  bgPetals = bgPetals.filter(p => p.y < bgCanvas.height + 20);
+  bgPetals.forEach(p => {
+    p.y += p.vy; p.wob += p.ws;
+    p.x += p.vx + Math.sin(p.wob) * 0.45; p.rot += p.rs;
+    drawBgPetal(p);
+  });
+  requestAnimationFrame(bgTick);
+}
+bgTick();
+
+// ════════════════════════════════
+// FULLSCREEN
+// ════════════════════════════════
+document.addEventListener('touchstart', function fs() {
+  const el = document.documentElement;
+  (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || function(){}).call(el);
+  document.removeEventListener('touchstart', fs);
+}, { once: true });
+
+// ════════════════════════════════
+// AUDIO
+// ════════════════════════════════
+const audio    = document.getElementById('audio');
+const playBtn  = document.getElementById('play-btn');
+const playIcon = document.getElementById('play-icon');
+const vinyl    = document.getElementById('vinyl');
+const barWaves = document.getElementById('bar-waves');
+const barBtn   = document.getElementById('bar-btn');
+const barIcon  = document.getElementById('bar-icon');
+const musicBar = document.getElementById('music-bar');
+
+const PLAY_SVG  = '<path d="M8 5v14l11-7z"/>';
+const PAUSE_SVG = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+
+let isPlaying = false;
+let triggered = false;
+
+function setPlaying(v) {
+  isPlaying = v;
+  playIcon.innerHTML = v ? PAUSE_SVG : PLAY_SVG;
+  barIcon.innerHTML  = v ? PAUSE_SVG : PLAY_SVG;
+  v ? vinyl.classList.add('spinning')     : vinyl.classList.remove('spinning');
+  v ? barWaves.classList.remove('paused') : barWaves.classList.add('paused');
+}
+
+playBtn.addEventListener('click', () => {
+  if (isPlaying) { audio.pause(); setPlaying(false); }
+  else {
+    audio.play().catch(() => {});
+    setPlaying(true);
+    if (!triggered) { triggered = true; setTimeout(startTransition, 2200); }
+  }
+});
+barBtn.addEventListener('click', () => {
+  if (isPlaying) { audio.pause(); setPlaying(false); }
+  else           { audio.play().catch(() => {}); setPlaying(true); }
+});
+
+// ════════════════════════════════
+// TRANSICIÓN — CORTINA DE PÉTALOS
+// Barre en diagonal top-right → bottom-left
+// revelando la carta por debajo como pasar una hoja
+// ════════════════════════════════
+function startTransition() {
+  const tc  = document.getElementById('trans-canvas');
+  const sp  = document.getElementById('screen-player');
+  const sl  = document.getElementById('screen-letter');
+
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  tc.width  = W;
+  tc.height = H;
+  tc.style.opacity = '1';
+
+  const ctx = tc.getContext('2d');
+
+  // Pre-generar pétalos decorativos para el borde de la cortina
+  // Cada pétalo tiene posición relativa al frente de ola (en coordenadas de diagonal)
+  const PETAL_COUNT = 120;
+  const edgePetals = [];
+  for (let i = 0; i < PETAL_COUNT; i++) {
+    edgePetals.push({
+      offset: (Math.random() - 0.5) * 200,   // desplazamiento perpendicular al frente
+      along:  Math.random(),                   // posición a lo largo del frente (0-1)
+      size:   Math.random() * 14 + 7,
+      rot:    Math.random() * Math.PI * 2,
+      rspeed: (Math.random() - 0.5) * 0.06,
+      color:  COLORS[Math.random() * COLORS.length | 0],
+      alpha:  Math.random() * 0.7 + 0.3,
+      scatterX: (Math.random() - 0.5) * 60,
+      scatterY: (Math.random() - 0.5) * 40,
+    });
+  }
+
+  // Pétalos pequeños que flotan tras la cortina
+  const floatingPetals = [];
+  for (let i = 0; i < 60; i++) {
+    floatingPetals.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      size: Math.random() * 9 + 4,
+      rot: Math.random() * Math.PI * 2,
+      rspeed: (Math.random() - 0.5) * 0.04,
+      vy: Math.random() * 0.8 + 0.3,
+      vx: (Math.random() - 0.5) * 0.4,
+      color: COLORS[Math.random() * COLORS.length | 0],
+      alpha: Math.random() * 0.5 + 0.2,
+    });
+  }
+
+  // La diagonal va de top-right a bottom-left
+  // "progress" va de 0 a 1: 0 = todo cubierto por el player, 1 = todo revelado
+  // El frente de ola es una línea diagonal: x + y = progress * (W + H)
+  // Lo que está POR DEBAJO de la línea (x+y > threshold) ya fue revelado (carta visible)
+  // Lo que está POR ARRIBA (x+y < threshold) sigue cubierto (player visible)
+
+  // Como la carta ya está en z-index 5 y el player en z-index 10,
+  // usamos el canvas de transición como "máscara" del player:
+  // pintamos el player encima del canvas con clip region
+
+  const DURATION = 2800; // ms duración total del barrido
+  const EDGE_WIDTH = 90; // ancho del borde con pétalos
+  let startTime = null;
+
+  // Mostrar carta desde el principio (detrás)
+  sl.classList.add('active');
+
+  function drawPetalShape(cx, c, px, py, size, rot, alpha) {
+    cx.save();
+    cx.translate(px, py); cx.rotate(rot);
+    cx.globalAlpha = alpha; cx.fillStyle = c;
+    // forma de pétalo de cerezo: 4 curvas bezier
+    cx.beginPath();
+    cx.moveTo(0, -size);
+    cx.bezierCurveTo(size * 0.5, -size * 0.5,  size * 0.6,  size * 0.1, 0,  size * 0.5);
+    cx.bezierCurveTo(-size * 0.6, size * 0.1, -size * 0.5, -size * 0.5, 0, -size);
+    cx.fill();
+    // muesca del pétalo
+    cx.globalAlpha = alpha * 0.4;
+    cx.strokeStyle = c;
+    cx.lineWidth = 0.5;
+    cx.beginPath();
+    cx.moveTo(0, -size * 0.1);
+    cx.lineTo(0,  size * 0.45);
+    cx.stroke();
+    cx.restore();
+  }
+
+  function frame(ts) {
+    if (!startTime) startTime = ts;
+    const elapsed  = ts - startTime;
+    const progress = Math.min(elapsed / DURATION, 1);
+
+    // easing suave
+    const eased = progress < 0.5
+      ? 2 * progress * progress
+      : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+
+    const threshold = eased * (W + H + EDGE_WIDTH * 2);
+
+    ctx.clearRect(0, 0, W, H);
+
+    // ── 1. Zona cubierta (player): pintamos fondo rosa encima de la carta ──
+    ctx.save();
+    ctx.beginPath();
+    // polígono: la parte donde x+y < threshold
+    ctx.moveTo(0, 0);
+    // recorremos el borde del canvas que está "antes" de la diagonal
+    const tx = Math.min(threshold, W);
+    const ty = Math.max(0, threshold - W);
+    if (threshold <= W) {
+      ctx.lineTo(threshold, 0);
+      ctx.lineTo(0, threshold);
+    } else {
+      ctx.lineTo(W, 0);
+      ctx.lineTo(W, ty);
+      const bx = threshold - H;
+      if (bx > 0) {
+        ctx.lineTo(bx, H);
+        ctx.lineTo(0, H);
+      } else {
+        ctx.lineTo(0, threshold);
+      }
+    }
+    ctx.closePath();
+    ctx.fillStyle = 'rgba(253,244,247,0.98)';
+    ctx.fill();
+    ctx.restore();
+
+    // ── 2. Pétalos flotando en la zona ya revelada ──
+    floatingPetals.forEach(p => {
+      const diag = p.x + p.y;
+      if (diag > threshold - EDGE_WIDTH * 0.5) {
+        p.y += p.vy; p.x += p.vx; p.rot += p.rspeed;
+        if (p.y > H + 20) { p.y = -20; p.x = Math.random() * W; }
+        drawPetalShape(ctx, p.color, p.x, p.y, p.size, p.rot, p.alpha * Math.min(1, (diag - threshold + EDGE_WIDTH) / EDGE_WIDTH));
+      }
+    });
+
+    // ── 3. Borde de ola: franja de pétalos detallados ──
+    // El frente es la línea x+y = threshold
+    // Generamos puntos a lo largo de esa línea
+    const frontLen = Math.sqrt(2) * Math.min(W, H, threshold);
+    edgePetals.forEach(p => {
+      // posición a lo largo del frente diagonal
+      const diagLen = Math.sqrt(W*W + H*H);
+      const along   = p.along * diagLen;
+      // punto en la diagonal: x+y = threshold, moviéndonos a lo largo
+      const fx = (threshold / 2) + along * 0.707 + p.offset * 0.707;
+      const fy = (threshold / 2) - along * 0.707 + p.offset * 0.707;
+
+      if (fx < -p.size * 2 || fx > W + p.size * 2) return;
+      if (fy < -p.size * 2 || fy > H + p.size * 2) return;
+
+      // distancia al frente de ola
+      const dist   = (fx + fy) - threshold;
+      const inEdge = dist > -EDGE_WIDTH && dist < EDGE_WIDTH * 1.5;
+      if (!inEdge) return;
+
+      p.rot += p.rspeed;
+      const fadeAlpha = p.alpha * (1 - Math.abs(dist) / (EDGE_WIDTH * 1.5));
+      drawPetalShape(ctx, p.color,
+        fx + p.scatterX * (dist / EDGE_WIDTH),
+        fy + p.scatterY * (dist / EDGE_WIDTH),
+        p.size, p.rot, Math.max(0, fadeAlpha));
+    });
+
+    // ── 4. Línea de brillo en el frente ──
+    ctx.save();
+    ctx.globalAlpha = 0.35 * (1 - progress);
+    const glowGrad = ctx.createLinearGradient(
+      threshold * 0.5 - 40, threshold * 0.5 + 40,
+      threshold * 0.5 + 40, threshold * 0.5 - 40
+    );
+    glowGrad.addColorStop(0,   'rgba(253,232,239,0)');
+    glowGrad.addColorStop(0.4, 'rgba(244,184,200,0.8)');
+    glowGrad.addColorStop(0.6, 'rgba(255,255,255,0.9)');
+    glowGrad.addColorStop(1,   'rgba(253,232,239,0)');
+    ctx.strokeStyle = glowGrad;
+    ctx.lineWidth   = 24;
+    ctx.beginPath();
+    ctx.moveTo(Math.min(threshold, W), 0);
+    ctx.lineTo(0, Math.min(threshold, H));
+    if (threshold > W) {
+      ctx.moveTo(W, threshold - W);
+      ctx.lineTo(threshold - H, H);
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    if (progress < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      // fin: limpiar y mostrar carta limpia
+      tc.style.transition = 'opacity 0.5s ease';
+      tc.style.opacity    = '0';
+      sp.style.transition = 'opacity 0.4s ease';
+      sp.style.opacity    = '0';
+      sp.style.pointerEvents = 'none';
+      musicBar.classList.add('show');
+      setTimeout(() => {
+        sp.style.display = 'none';
+        tc.style.display = 'none';
+      }, 600);
+    }
+  }
+
+  requestAnimationFrame(frame);
+}
+</script>
+</body>
+</html>
